@@ -1,0 +1,87 @@
+:root {
+  --basic-padding: 10px;
+  --basic-margin: 10px;
+}
+
+a {
+  text-decoration: none;
+}
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.container {
+  padding: 0 2rem;
+}
+
+/* 헤더 */
+.header {
+  display: flex;
+  line-height: 100px;
+  height: 100px;
+}
+
+.nav {
+  display: flex;
+  overflow: hidden;
+  flex-wrap: nowrap;
+  justify-items: center;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menu_li {
+  display: flex;
+  padding: 0 var(--basic-padding);
+}
+
+.menu_li a {
+  padding: 0 var(--basic-padding);
+}
+
+/* 메인 */
+.main {
+  flex: 1;
+}
+
+.banner {
+  background: rgb(255, 218, 252);
+  background: linear-gradient(
+    151deg,
+    rgba(255, 218, 252, 0.6082808123249299) 5%,
+    rgba(195, 205, 255, 1) 20%,
+    rgba(246, 230, 250, 0.3393732492997199) 40%,
+    rgba(254, 233, 255, 0.6530987394957983) 59%,
+    rgba(255, 220, 220, 0.9) 84%,
+    rgba(255, 250, 250, 0.227328431372549) 100%
+  );
+}
+
+.background {
+  background: rgb(255, 220, 220);
+  background: linear-gradient(
+    150deg,
+    rgba(255, 220, 220, 0.9) 10%,
+    rgba(255, 250, 250, 0.227328431372549) 25%,
+    rgba(246, 230, 250, 0.3393732492997199) 50%,
+    rgba(195, 205, 255, 1) 65%,
+    rgba(254, 233, 255, 0.6530987394957983) 80%,
+    rgba(255, 218, 252, 0.6082808123249299) 95%
+  );
+}
+
+/* 푸터 */
+.footer {
+  bottom: 0;
+  width: 100%;
+  height: 300px;
+  background-color: #111111;
+  text-align: center;
+}
+
+.footer_content {
+  color: #ffffff;
+}

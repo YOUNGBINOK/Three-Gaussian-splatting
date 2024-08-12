@@ -1,0 +1,9 @@
+.wrap {
+  position: relative;
+}
+
+.toast {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+}
