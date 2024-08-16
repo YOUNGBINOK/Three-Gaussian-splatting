@@ -9,18 +9,34 @@
   </head>
   <body>
     <div class="wrap">
-      <div aria-live="polite" aria-atomic="true" id="toast-container" class="">
-        <button type="button" class="btn btn-dark w-100" id="liveToastBtn">Control</button>
-        <div class="toast" id="liveToast" role="alert" aria-live="assertive" aria-atomic="true" style="display: none">
-          <div class="toast-header">
-            <strong class="me-auto">Key Info</strong>
-            <small>Scene</small>
+      <div class="viewer_header">
+        <div class="container_box">
+          <div class="brand">
+            <h1>Gaussian Splatting</h1>
+            <h2 class="fs-6">Deom By CodeBrain</h2>
           </div>
-          <div class="toast-body">
-            <p>W</p>
-            <p>A</p>
-            <p>S</p>
-            <p>D</p>
+          <div aria-live="polite" aria-atomic="true" id="toast-container" class="">
+            <button type="button" class="btn btn-light w-50" onclick="location.href='index.html'">Home</button
+            ><button type="button" class="btn btn-dark w-50" id="liveToastBtn">Control</button>
+            <div
+              class="toast"
+              id="liveToast"
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
+              style="display: none"
+            >
+              <div class="toast-header">
+                <strong class="me-auto">Key Info</strong>
+                <small>Scene</small>
+              </div>
+              <div class="toast-body">
+                <p>W</p>
+                <p>A</p>
+                <p>S</p>
+                <p>D</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

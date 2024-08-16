@@ -3,6 +3,20 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+let model, path, mixer, actions, settings, idleAction, walkAction;
+let modelPath = "/assets/models/Soldier.glb";
+let clock = new THREE.Clock();
+
+settings = {
+  "modify step size": 0.05,
+  "use default duration": true,
+  "set custom duration": 3.5,
+  "modify idle weight": 0.0,
+  "modify walk weight": 1.0,
+  "modify run weight": 0.0,
+  "modify time scale": 1.0,
+};
+
 const UIButton = document.getElementById("liveToastBtn");
 const UIToast = document.getElementById("liveToast");
 UIButton.addEventListener("click", function () {
@@ -22,21 +36,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-function viewer(scene) {
+async function viewer(scene) {
   const threeScene = new THREE.Scene();
-
-  const geometry = new THREE.BoxGeometry(1, 1, 1);
-  const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-  const cube = new THREE.Mesh(geometry, material);
-  cube.position.set(6.24537, 0.02895, 2.85487);
-  cube.lookAt(2.06077, 0.56225, -0.90236);
-  cube.up.set(0.0, -1.0, 0.0);
-  // cube.position.set(2.43189, 3.95382, -4.4558);
-  // cube.up.set(0.01933, -0.7583, -0.65161);
-  // cube.lookAt(0, 0, 0);
-
-  threeScene.add(cube);
-  console.log(cube);
 
   const rootElement = document.createElement("div");
   const renderer = new THREE.WebGLRenderer({
@@ -45,13 +46,23 @@ function viewer(scene) {
   renderer.setSize(window.innerWidth, window.innerHeight);
   rootElement.appendChild(renderer.domElement);
 
-  const step = 0.2;
+  await loadGltf(threeScene, modelPath);
+
+  const step = 0.005;
   const keys = { w: false, a: false, s: false, d: false };
+
+  let isLocked = true;
+  let isWalking = false;
+
+  document.addEventListener("pointerlockchange", () => {
+    isLocked = document.pointerLockElement === rootElement;
+  });
 
   window.addEventListener("keydown", function (event) {
     if (["KeyW", "KeyA", "KeyS", "KeyD"].includes(event.code)) {
       event.preventDefault();
       keys[event.code.toLowerCase().slice(-1)] = true;
+      isWalking = true;
     }
   });
 
@@ -59,46 +70,49 @@ function viewer(scene) {
     if (["KeyW", "KeyA", "KeyS", "KeyD"].includes(event.code)) {
       event.preventDefault();
       keys[event.code.toLowerCase().slice(-1)] = false;
+      if (keys.a === false && keys.w === false && keys.s === false && keys.d === false) isWalking = false;
     }
   });
 
-  // function updateCameraPosition() {
-  //   const direction = new THREE.Vector3();
-  //   const sideDirection = new THREE.Vector3();
+  const initialPitch = Math.PI;
+  let yaw = 0;
 
-  //   direction.set(0, 0, -1).applyQuaternion(viewer.camera.quaternion);
-  //   sideDirection.set(1, 0, 0).applyQuaternion(viewer.camera.quaternion);
+  document.addEventListener("mousemove", (event) => {
+    if (isLocked) {
+      yaw -= event.movementX * 0.001;
+    }
+  });
 
-  //   const moveDirection = new THREE.Vector3();
+  // 카메라 업데이트
+  const offset = new THREE.Vector3(0, 0.2, 0.4);
+  async function updateCameraPosition() {
+    if (model !== undefined) {
+      viewer.camera.rotation.set(initialPitch, yaw, 0);
+      model.scene.rotation.set(initialPitch, yaw, 0);
 
-  //   if (keys.w) moveDirection.add(direction.clone().multiplyScalar(step));
-  //   if (keys.s) moveDirection.add(direction.clone().negate().multiplyScalar(step));
-  //   if (keys.a) moveDirection.add(sideDirection.clone().negate().multiplyScalar(step));
-  //   if (keys.d) moveDirection.add(sideDirection.clone().multiplyScalar(step));
+      const direction = new THREE.Vector3();
+      const sideDirection = new THREE.Vector3();
 
-  //   viewer.camera.position.add(moveDirection);
-  // }
+      direction.set(0, 0, -1).applyQuaternion(viewer.camera.quaternion);
+      sideDirection.set(1, 0, 0).applyQuaternion(viewer.camera.quaternion);
 
-  function updateCameraPosition() {
-    const direction = new THREE.Vector3();
-    const sideDirection = new THREE.Vector3();
+      const moveDirection = new THREE.Vector3();
 
-    direction.set(0, 0, -1).applyQuaternion(viewer.camera.quaternion);
-    sideDirection.set(1, 0, 0).applyQuaternion(viewer.camera.quaternion);
+      if (keys.w) moveDirection.add(direction.clone().multiplyScalar(step));
+      if (keys.s) moveDirection.add(direction.clone().negate().multiplyScalar(step));
+      if (keys.a) moveDirection.add(sideDirection.clone().negate().multiplyScalar(step));
+      if (keys.d) moveDirection.add(sideDirection.clone().multiplyScalar(step));
 
-    const moveDirection = new THREE.Vector3();
-
-    if (keys.w) moveDirection.add(direction.clone().multiplyScalar(step));
-    if (keys.s) moveDirection.add(direction.clone().negate().multiplyScalar(step));
-    if (keys.a) moveDirection.add(sideDirection.clone().negate().multiplyScalar(step));
-    if (keys.d) moveDirection.add(sideDirection.clone().multiplyScalar(step));
-
-    cube.position.add(moveDirection);
-
-    viewer.camera.position.copy(cube.position);
-    viewer.camera.position.add(new THREE.Vector3(6.24537, 0.02895, 2.85487));
-    viewer.camera.lookAt(cube.position);
+      model.scene.position.add(moveDirection);
+      const newCameraPosition = model.scene.position
+        .clone()
+        .add(offset.clone().applyQuaternion(viewer.camera.quaternion));
+      viewer.camera.position.copy(newCameraPosition);
+    }
   }
+
+  const light = new THREE.AmbientLight("#ffffff");
+  threeScene.add(light);
 
   // GaussianSplats3D Viewer 초기화
   let params = {
@@ -111,7 +125,6 @@ function viewer(scene) {
     sphericalHarmonicsDegree: 2,
   };
 
-  let path;
   switch (scene) {
     case "bicycle":
       params = {
@@ -180,8 +193,8 @@ function viewer(scene) {
       params = {
         ...params,
         cameraUp: [0.0, -1.0, 0.0],
-        initialCameraPosition: [6.25148, 0.11561, 2.86036],
-        initialCameraLookAt: [2.06688, 0.64891, -0.89687],
+        initialCameraPosition: [-2.27476, 0.02409, -5.03016],
+        initialCameraLookAt: [7.59087, -0.58241, 4.12368],
       };
       path = "/assets/models/codebrain.ksplat";
       break;
@@ -190,8 +203,7 @@ function viewer(scene) {
       return;
   }
   const viewer = new GaussianSplats3D.Viewer(params);
-  //viewer.controls.stopListenToKeyEvents();
-
+  //viewer.cameraUp.set(0, 1, 0);
   viewer
     .addSplatScene(path, {
       progressiveLoad: false,
@@ -204,13 +216,93 @@ function viewer(scene) {
       console.error("Error loading file:", error);
     });
 
-  function animate() {
-    updateCameraPosition();
+  async function animate() {
     renderer.render(threeScene, viewer.camera);
-    // viewer.update();
-    // viewer.render();
     requestAnimationFrame(animate);
+    await updateCameraPosition();
+
+    if (mixer) {
+      const delta = clock.getDelta();
+
+      if (isWalking === true) {
+        walkAction.play();
+      } else {
+        prepareCrossFade(idleAction, walkAction, 0.1);
+      }
+      mixer.update(delta);
+    }
   }
 
   animate();
+}
+
+function prepareCrossFade(startAction, endAction, defaultDuration) {
+  const duration = setCrossFadeDuration(defaultDuration);
+
+  if (startAction === idleAction) {
+    executeCrossFade(startAction, endAction, duration);
+  } else {
+    synchronizeCrossFade(startAction, endAction, duration);
+  }
+}
+
+function setCrossFadeDuration(defaultDuration) {
+  if (settings["use default duration"]) {
+    return defaultDuration;
+  } else {
+    return settings["set custom duration"];
+  }
+}
+
+function synchronizeCrossFade(startAction, endAction, duration) {
+  mixer.addEventListener("loop", onLoopFinished);
+
+  function onLoopFinished(event) {
+    if (event.action === startAction) {
+      mixer.removeEventListener("loop", onLoopFinished);
+
+      executeCrossFade(startAction, endAction, duration);
+    }
+  }
+}
+
+function executeCrossFade(startAction, endAction, duration) {
+  setWeight(endAction, 1);
+  endAction.time = 0;
+
+  startAction.crossFadeTo(endAction, duration, true);
+}
+
+function setWeight(action, weight) {
+  action.enabled = true;
+  action.setEffectiveTimeScale(1);
+  action.setEffectiveWeight(weight);
+}
+
+async function loadGltf(scene, path) {
+  const loader = new GLTFLoader();
+  loader.load(
+    path,
+    function (gltf) {
+      model = gltf;
+      scene.add(gltf.scene);
+      model.scene.position.set(-2.27476, 0.2, -5.03016);
+      model.scene.lookAt(7.59087, -0.58241, 4.12368);
+      model.scene.scale.set(0.1, 0.1, 0.1);
+      model.scene.rotation.set(Math.PI, -Math.PI / 4, 0);
+
+      const animations = model.animations;
+      mixer = new THREE.AnimationMixer(gltf.scene);
+      idleAction = mixer.clipAction(animations[0]);
+      walkAction = mixer.clipAction(animations[3]);
+      actions = [idleAction, walkAction];
+      walkAction.play();
+    },
+    function (xhr) {
+      console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+    },
+    function (error) {
+      console.log("An error happened");
+    }
+  );
 }
