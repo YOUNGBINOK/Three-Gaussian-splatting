@@ -1,20 +1,17 @@
 import * as GaussianSplats3D from "@mkkellogg/gaussian-splats-3d";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-let model, path, mixer, actions, settings, idleAction, walkAction;
-let modelPath = "/assets/models/Soldier.glb";
+let model, path, mixer, actions, settings, idleAction, walkAction, step;
+let modelPath = "/assets/models/walk_woman.glb";
 let clock = new THREE.Clock();
 
 settings = {
   "modify step size": 0.05,
   "use default duration": true,
   "set custom duration": 3.5,
-  "modify idle weight": 0.0,
-  "modify walk weight": 1.0,
-  "modify run weight": 0.0,
-  "modify time scale": 1.0,
 };
 
 const UIButton = document.getElementById("liveToastBtn");
@@ -46,9 +43,6 @@ async function viewer(scene) {
   renderer.setSize(window.innerWidth, window.innerHeight);
   rootElement.appendChild(renderer.domElement);
 
-  await loadGltf(threeScene, modelPath);
-
-  const step = 0.005;
   const keys = { w: false, a: false, s: false, d: false };
 
   let isLocked = true;
@@ -77,10 +71,17 @@ async function viewer(scene) {
   const initialPitch = Math.PI;
   let yaw = 0;
 
-  document.addEventListener("mousemove", (event) => {
-    if (isLocked) {
-      yaw -= event.movementX * 0.001;
-    }
+  document.addEventListener("mousedown", (event) => {
+    isLocked = true;
+    document.addEventListener("mousemove", (event) => {
+      if (isLocked) {
+        yaw -= event.movementX * 0.0002;
+      }
+    });
+  });
+
+  document.addEventListener("mouseup", (event) => {
+    isLocked = false;
   });
 
   // 카메라 업데이트
@@ -89,7 +90,6 @@ async function viewer(scene) {
     if (model !== undefined) {
       viewer.camera.rotation.set(initialPitch, yaw, 0);
       model.scene.rotation.set(initialPitch, yaw, 0);
-
       const direction = new THREE.Vector3();
       const sideDirection = new THREE.Vector3();
 
@@ -119,9 +119,6 @@ async function viewer(scene) {
     useBuiltInControls: false,
     threeScene: threeScene,
     render: renderer,
-    cameraUp: [0, -1, 0],
-    initialCameraPosition: [0, 0, 6],
-    initialCameraLookAt: [0, 0, 0],
     sphericalHarmonicsDegree: 2,
   };
 
@@ -163,13 +160,21 @@ async function viewer(scene) {
       path = "/assets/models/stump.ksplat";
       break;
     case "postshot":
+      step = 0.05;
+
       params = {
         ...params,
         cameraUp: [0.0, -1.0, 0.0],
-        initialCameraPosition: [8.96491, -0.33876, -3.03454],
-        initialCameraLookAt: [3.03079, -0.33447, -3.41642],
+        initialCameraPosition: [9.450669438394524, -0.08472999999999996, -7.040204875651971],
+        initialCameraLookAt: [3.38005, -0.36812, 3.40332],
       };
       path = "/assets/models/postshot-quickstart.ksplat";
+      await loadGltf(
+        params.threeScene,
+        modelPath,
+        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
+        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
+      );
       break;
     case "treehill":
       params = {
@@ -180,30 +185,42 @@ async function viewer(scene) {
       };
       path = "/assets/models/treehill.ksplat";
       break;
-    case "truck":
+    case "mosaic":
       params = {
         ...params,
-        cameraUp: [0, -1, -0.17],
-        initialCameraPosition: [-5, -1, -1],
-        initialCameraLookAt: [-1.72477, 0.05395, -0.00147],
+        cameraUp: [0.08473, -0.98009, 0.17957],
+        initialCameraPosition: [0.58407, 2.61195, -0.86032],
+        initialCameraLookAt: [-1.03002, 0.67666, -0.78232],
       };
-      path = "/assets/models/truck.ksplat";
+      path = "/assets/models/mosaic51.ksplat";
+      await loadGltf(
+        params.threeScene,
+        modelPath,
+        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
+        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
+      );
       break;
     case "codebrain":
+      step = 0.005;
       params = {
         ...params,
         cameraUp: [0.0, -1.0, 0.0],
-        initialCameraPosition: [-2.27476, 0.02409, -5.03016],
-        initialCameraLookAt: [7.59087, -0.58241, 4.12368],
+        initialCameraPosition: [-2.3626, 0.17483, -5.08453],
+        initialCameraLookAt: [7.50303, -1.43167, 4.06931],
       };
       path = "/assets/models/codebrain.ksplat";
+      await loadGltf(
+        params.threeScene,
+        modelPath,
+        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
+        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
+      );
       break;
     default:
       console.error("Unknown scene:", scene);
       return;
   }
   const viewer = new GaussianSplats3D.Viewer(params);
-  //viewer.cameraUp.set(0, 1, 0);
   viewer
     .addSplatScene(path, {
       progressiveLoad: false,
@@ -225,9 +242,11 @@ async function viewer(scene) {
       const delta = clock.getDelta();
 
       if (isWalking === true) {
+        idleAction.reset();
         walkAction.play();
       } else {
-        prepareCrossFade(idleAction, walkAction, 0.1);
+        walkAction.reset();
+        idleAction.play();
       }
       mixer.update(delta);
     }
@@ -236,67 +255,24 @@ async function viewer(scene) {
   animate();
 }
 
-function prepareCrossFade(startAction, endAction, defaultDuration) {
-  const duration = setCrossFadeDuration(defaultDuration);
-
-  if (startAction === idleAction) {
-    executeCrossFade(startAction, endAction, duration);
-  } else {
-    synchronizeCrossFade(startAction, endAction, duration);
-  }
-}
-
-function setCrossFadeDuration(defaultDuration) {
-  if (settings["use default duration"]) {
-    return defaultDuration;
-  } else {
-    return settings["set custom duration"];
-  }
-}
-
-function synchronizeCrossFade(startAction, endAction, duration) {
-  mixer.addEventListener("loop", onLoopFinished);
-
-  function onLoopFinished(event) {
-    if (event.action === startAction) {
-      mixer.removeEventListener("loop", onLoopFinished);
-
-      executeCrossFade(startAction, endAction, duration);
-    }
-  }
-}
-
-function executeCrossFade(startAction, endAction, duration) {
-  setWeight(endAction, 1);
-  endAction.time = 0;
-
-  startAction.crossFadeTo(endAction, duration, true);
-}
-
-function setWeight(action, weight) {
-  action.enabled = true;
-  action.setEffectiveTimeScale(1);
-  action.setEffectiveWeight(weight);
-}
-
-async function loadGltf(scene, path) {
+async function loadGltf(scene, path, position, lookAt) {
   const loader = new GLTFLoader();
   loader.load(
     path,
     function (gltf) {
       model = gltf;
-      scene.add(gltf.scene);
-      model.scene.position.set(-2.27476, 0.2, -5.03016);
-      model.scene.lookAt(7.59087, -0.58241, 4.12368);
+      model.scene.position.set(position.x, position.y, position.z);
+      model.scene.lookAt(lookAt.x, lookAt.y, lookAt.z);
       model.scene.scale.set(0.1, 0.1, 0.1);
-      model.scene.rotation.set(Math.PI, -Math.PI / 4, 0);
 
       const animations = model.animations;
       mixer = new THREE.AnimationMixer(gltf.scene);
       idleAction = mixer.clipAction(animations[0]);
-      walkAction = mixer.clipAction(animations[3]);
+      walkAction = mixer.clipAction(animations[1]);
+
       actions = [idleAction, walkAction];
-      walkAction.play();
+      idleAction.play();
+      scene.add(gltf.scene);
     },
     function (xhr) {
       console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
