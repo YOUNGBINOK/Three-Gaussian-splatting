@@ -61,6 +61,10 @@ a {
   );
 }
 
+.banner p {
+  color: #555555;
+}
+
 .background {
   background: rgb(255, 220, 220);
   background: linear-gradient(

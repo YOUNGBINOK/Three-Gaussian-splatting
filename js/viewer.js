@@ -4,15 +4,9 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-let model, path, mixer, actions, settings, idleAction, walkAction, step;
-let modelPath = "/assets/models/walk_woman.glb";
+let model, path, mixer, actions, idleAction, walkAction, step;
+let modelPath = "/assets/models/jogging_woman.glb";
 let clock = new THREE.Clock();
-
-settings = {
-  "modify step size": 0.05,
-  "use default duration": true,
-  "set custom duration": 3.5,
-};
 
 const UIButton = document.getElementById("liveToastBtn");
 const UIToast = document.getElementById("liveToast");
@@ -24,12 +18,13 @@ UIButton.addEventListener("click", function () {
   }
 });
 
+let sceneName = document.getElementById("scene_name");
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const scene = urlParams.get("scene");
-
   if (scene) {
     viewer(scene);
+    sceneName.textContent = scene;
   }
 });
 
@@ -124,6 +119,7 @@ async function viewer(scene) {
 
   switch (scene) {
     case "bicycle":
+      step = 0.05;
       params = {
         ...params,
         cameraUp: [0.03966, -0.76135, -0.64713],
@@ -131,6 +127,12 @@ async function viewer(scene) {
         initialCameraLookAt: [1.24785, -0.06874, 0.68925],
       };
       path = "/assets/models/bicycle.ksplat";
+      await loadGltf(
+        params.threeScene,
+        modelPath,
+        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
+        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
+      );
       break;
     case "bonsai":
       params = {
@@ -161,7 +163,6 @@ async function viewer(scene) {
       break;
     case "postshot":
       step = 0.05;
-
       params = {
         ...params,
         cameraUp: [0.0, -1.0, 0.0],
@@ -201,7 +202,7 @@ async function viewer(scene) {
       );
       break;
     case "codebrain":
-      step = 0.005;
+      step = 0.009;
       params = {
         ...params,
         cameraUp: [0.0, -1.0, 0.0],
@@ -233,9 +234,9 @@ async function viewer(scene) {
       console.error("Error loading file:", error);
     });
 
+  renderer.setAnimationLoop(animate);
   async function animate() {
     renderer.render(threeScene, viewer.camera);
-    requestAnimationFrame(animate);
     await updateCameraPosition();
 
     if (mixer) {
@@ -267,8 +268,8 @@ async function loadGltf(scene, path, position, lookAt) {
 
       const animations = model.animations;
       mixer = new THREE.AnimationMixer(gltf.scene);
-      idleAction = mixer.clipAction(animations[0]);
-      walkAction = mixer.clipAction(animations[1]);
+      idleAction = mixer.clipAction(animations[1]);
+      walkAction = mixer.clipAction(animations[0]);
 
       actions = [idleAction, walkAction];
       idleAction.play();
