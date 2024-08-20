@@ -60,11 +60,27 @@ a {
     rgba(255, 250, 250, 0.227328431372549) 100%
   );
 }
+.banner_content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lead_left {
+  border-right: 1px solid #888888e9;
+}
+
+.lead_right {
+  padding-left: var(--basic-padding);
+}
+
+.lead {
+  background-color: azure;
+}
 
 .banner p {
   color: #555555;
 }
-
 .background {
   background: rgb(255, 220, 220);
   background: linear-gradient(

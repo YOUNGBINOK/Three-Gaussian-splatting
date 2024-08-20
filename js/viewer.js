@@ -1,10 +1,9 @@
 import * as GaussianSplats3D from "@mkkellogg/gaussian-splats-3d";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-let model, path, mixer, actions, idleAction, walkAction, step;
+let model, path, mixer, actions, idleAction, walkAction, step, yaw;
 let modelPath = "/assets/models/jogging_woman.glb";
 let clock = new THREE.Clock();
 
@@ -63,8 +62,148 @@ async function viewer(scene) {
     }
   });
 
+  const light = new THREE.AmbientLight("#ffffff");
+  threeScene.add(light);
   const initialPitch = Math.PI;
-  let yaw = 0;
+  // GaussianSplats3D Viewer 초기화
+  let params = {
+    useBuiltInControls: false,
+    threeScene: threeScene,
+    render: renderer,
+    sphericalHarmonicsDegree: 2,
+  };
+
+  const viewer = new GaussianSplats3D.Viewer(params);
+
+  switch (scene) {
+    case "bicycle":
+      step = 0.05;
+      yaw = -Math.PI / 2;
+      params = {
+        ...params,
+        cameraUp: [0.07552, -0.9436, -0.32235],
+        initialCameraPosition: [-6.22758, -2.52872, 12.08985],
+        initialCameraLookAt: [2.17701, -0.39949, 7.77921],
+      };
+      path = "/assets/models/bicycle.ksplat";
+      await loadGltf(
+        params.threeScene,
+        modelPath,
+        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
+        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
+      );
+      break;
+    case "garden":
+      params = {
+        ...params,
+        cameraUp: [0.0, -0.87991, -0.47515],
+        initialCameraPosition: [-0.97843, 2.49011, -2.73756],
+        initialCameraLookAt: [10.38782, -3.54582, 10.42273],
+      };
+      path = "/assets/models/garden.ksplat";
+      break;
+    case "stump":
+      step = 0.09;
+      yaw = Math.PI / 3;
+      console.log(viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(-45), 0, 0));
+      params = {
+        ...params,
+        cameraUp: [0.0, -1.70711, -0.70711],
+        initialCameraPosition: [-11.39912, -0.36364, 1.44364],
+        initialCameraLookAt: [-1.37417, -0.94295, 0.65241],
+      };
+      path = "/assets/models/stump.ksplat";
+      await loadGltf(
+        params.threeScene,
+        modelPath,
+        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
+        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
+      );
+      break;
+    case "postshot":
+      step = 0.05;
+      yaw = Math.PI / 1.8;
+      params = {
+        ...params,
+        cameraUp: [0.0, -1.0, 0.0],
+        initialCameraPosition: [7.221565, -0.6847299, 5.82408308],
+        initialCameraLookAt: [3.38005, -0.36812, 3.40332],
+      };
+      path = "/assets/models/postshot-quickstart.ksplat";
+      await loadGltf(
+        params.threeScene,
+        modelPath,
+        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
+        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
+      );
+      break;
+    case "treehill":
+      yaw = -Math.PI / 5;
+      step = 0.05;
+      params = {
+        ...params,
+        cameraUp: [0.0, 0.0, 0.0],
+        initialCameraPosition: [-1.5268, -2.86369, 8.54446],
+        initialCameraLookAt: [0, 0, 0],
+      };
+      path = "/assets/models/treehill.ksplat";
+      await loadGltf(
+        params.threeScene,
+        modelPath,
+        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
+        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
+      );
+      break;
+    case "mosaic":
+      step = 0.05;
+      yaw = Math.PI / 1.8;
+      params = {
+        ...params,
+        cameraUp: [0.41197, -0.79784, 0.44015],
+        initialCameraPosition: [0.05654, 0.78808, -0.21461],
+        initialCameraLookAt: [0.01862, 1.60604, -0.67796],
+      };
+      path = "/assets/models/mosaic51.ksplat";
+      await loadGltf(
+        params.threeScene,
+        modelPath,
+        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
+        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
+      );
+      break;
+    case "codebrain":
+      yaw = -Math.PI / 5;
+      step = 0.009;
+      params = {
+        ...params,
+        cameraUp: [0.0, -1.0, 0.0],
+        initialCameraPosition: [-2.3626, 0.17483, -5.08453],
+        initialCameraLookAt: [7.50303, -1.43167, 4.06931],
+      };
+      path = "/assets/models/codebrain.ksplat";
+      await loadGltf(
+        params.threeScene,
+        modelPath,
+        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
+        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
+      );
+      break;
+    default:
+      console.error("Unknown scene:", scene);
+      return;
+  }
+
+  viewer
+    .addSplatScene(path, {
+      progressiveLoad: false,
+    })
+    .then(() => {
+      console.log("Loaded successfully:", path);
+      viewer.start();
+    })
+    .catch((error) => {
+      console.error("Error loading file:", error);
+    });
 
   document.addEventListener("mousedown", (event) => {
     isLocked = true;
@@ -80,7 +219,7 @@ async function viewer(scene) {
   });
 
   // 카메라 업데이트
-  const offset = new THREE.Vector3(0, 0.2, 0.4);
+  const offset = new THREE.Vector3(0, 0.19, 0.4);
   async function updateCameraPosition() {
     if (model !== undefined) {
       viewer.camera.rotation.set(initialPitch, yaw, 0);
@@ -105,134 +244,6 @@ async function viewer(scene) {
       viewer.camera.position.copy(newCameraPosition);
     }
   }
-
-  const light = new THREE.AmbientLight("#ffffff");
-  threeScene.add(light);
-
-  // GaussianSplats3D Viewer 초기화
-  let params = {
-    useBuiltInControls: false,
-    threeScene: threeScene,
-    render: renderer,
-    sphericalHarmonicsDegree: 2,
-  };
-
-  switch (scene) {
-    case "bicycle":
-      step = 0.05;
-      params = {
-        ...params,
-        cameraUp: [0.03966, -0.76135, -0.64713],
-        initialCameraPosition: [-0.32965, -1.09144, 7.14262],
-        initialCameraLookAt: [1.24785, -0.06874, 0.68925],
-      };
-      path = "/assets/models/bicycle.ksplat";
-      await loadGltf(
-        params.threeScene,
-        modelPath,
-        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
-        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
-      );
-      break;
-    case "bonsai":
-      params = {
-        ...params,
-        cameraUp: [0.01933, -0.7583, -0.65161],
-        initialCameraPosition: [2.41994, 3.83644, -4.56361],
-        initialCameraLoowkAt: [0.96609, 1.39598, 0.43847],
-      };
-      path = "/assets/models/bonsai.ksplat";
-      break;
-    case "garden":
-      params = {
-        ...params,
-        cameraUp: [0.0, -0.87991, -0.47515],
-        initialCameraPosition: [-0.97843, 2.49011, -2.73756],
-        initialCameraLookAt: [10.38782, -3.54582, 10.42273],
-      };
-      path = "/assets/models/garden.ksplat";
-      break;
-    case "stump":
-      params = {
-        ...params,
-        cameraUp: [0.06881, -0.65246, -0.75469],
-        initialCameraPosition: [10.2829, 0.2205, 2.34208],
-        initialCameraLookAt: [0.40369, 0.44649, 1.42204],
-      };
-      path = "/assets/models/stump.ksplat";
-      break;
-    case "postshot":
-      step = 0.05;
-      params = {
-        ...params,
-        cameraUp: [0.0, -1.0, 0.0],
-        initialCameraPosition: [9.450669438394524, -0.08472999999999996, -7.040204875651971],
-        initialCameraLookAt: [3.38005, -0.36812, 3.40332],
-      };
-      path = "/assets/models/postshot-quickstart.ksplat";
-      await loadGltf(
-        params.threeScene,
-        modelPath,
-        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
-        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
-      );
-      break;
-    case "treehill":
-      params = {
-        ...params,
-        cameraUp: [-0.11233, -0.99321, -0.0302],
-        initialCameraPosition: [-1.5268, -2.86369, 8.54446],
-        initialCameraLookAt: [0, 0, 0],
-      };
-      path = "/assets/models/treehill.ksplat";
-      break;
-    case "mosaic":
-      params = {
-        ...params,
-        cameraUp: [0.08473, -0.98009, 0.17957],
-        initialCameraPosition: [0.58407, 2.61195, -0.86032],
-        initialCameraLookAt: [-1.03002, 0.67666, -0.78232],
-      };
-      path = "/assets/models/mosaic51.ksplat";
-      await loadGltf(
-        params.threeScene,
-        modelPath,
-        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
-        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
-      );
-      break;
-    case "codebrain":
-      step = 0.009;
-      params = {
-        ...params,
-        cameraUp: [0.0, -1.0, 0.0],
-        initialCameraPosition: [-2.3626, 0.17483, -5.08453],
-        initialCameraLookAt: [7.50303, -1.43167, 4.06931],
-      };
-      path = "/assets/models/codebrain.ksplat";
-      await loadGltf(
-        params.threeScene,
-        modelPath,
-        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
-        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
-      );
-      break;
-    default:
-      console.error("Unknown scene:", scene);
-      return;
-  }
-  const viewer = new GaussianSplats3D.Viewer(params);
-  viewer
-    .addSplatScene(path, {
-      progressiveLoad: false,
-    })
-    .then(() => {
-      console.log("Loaded successfully:", path);
-      viewer.start();
-    })
-    .catch((error) => {
-      console.error("Error loading file:", error);
-    });
 
   renderer.setAnimationLoop(animate);
   async function animate() {
@@ -265,12 +276,10 @@ async function loadGltf(scene, path, position, lookAt) {
       model.scene.position.set(position.x, position.y, position.z);
       model.scene.lookAt(lookAt.x, lookAt.y, lookAt.z);
       model.scene.scale.set(0.1, 0.1, 0.1);
-
       const animations = model.animations;
       mixer = new THREE.AnimationMixer(gltf.scene);
-      idleAction = mixer.clipAction(animations[1]);
+      idleAction = mixer.clipAction(animations[2]);
       walkAction = mixer.clipAction(animations[0]);
-
       actions = [idleAction, walkAction];
       idleAction.play();
       scene.add(gltf.scene);
