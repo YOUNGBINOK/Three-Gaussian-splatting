@@ -17,13 +17,15 @@ UIButton.addEventListener("click", function () {
   }
 });
 
-let sceneName = document.getElementById("scene_name");
+let sceneName = document.querySelectorAll(".scene_name");
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const scene = urlParams.get("scene");
   if (scene) {
     viewer(scene);
-    sceneName.textContent = scene;
+    sceneName.forEach((name) => {
+      name.textContent = scene.toUpperCase();
+    });
   }
 });
 
@@ -78,11 +80,12 @@ async function viewer(scene) {
   switch (scene) {
     case "bicycle":
       step = 0.05;
-      yaw = -Math.PI / 2;
+      yaw = -Math.PI / 1.1;
+      viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(-15), 0, 0);
       params = {
         ...params,
         cameraUp: [0.07552, -0.9436, -0.32235],
-        initialCameraPosition: [-6.22758, -2.52872, 12.08985],
+        initialCameraPosition: [-6.22758, -0.32872, 12.08985],
         initialCameraLookAt: [2.17701, -0.39949, 7.77921],
       };
       path = "/assets/models/bicycle.ksplat";
@@ -94,18 +97,27 @@ async function viewer(scene) {
       );
       break;
     case "garden":
+      step = 0.05;
+      yaw = -Math.PI / 3;
+      viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(-30), 0, 0);
       params = {
         ...params,
-        cameraUp: [0.0, -0.87991, -0.47515],
-        initialCameraPosition: [-0.97843, 2.49011, -2.73756],
-        initialCameraLookAt: [10.38782, -3.54582, 10.42273],
+        cameraUp: [0.0, -1.0, 0.0],
+        initialCameraPosition: [-7.3626, 0.97483, -8.08453],
+        initialCameraLookAt: [7.50303, -1.43167, 4.06931],
       };
       path = "/assets/models/garden.ksplat";
+      await loadGltf(
+        params.threeScene,
+        modelPath,
+        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
+        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
+      );
       break;
     case "stump":
       step = 0.09;
       yaw = Math.PI / 3;
-      console.log(viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(-45), 0, 0));
+      viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(-46.5), 0, 0);
       params = {
         ...params,
         cameraUp: [0.0, -1.70711, -0.70711],
@@ -138,13 +150,14 @@ async function viewer(scene) {
       );
       break;
     case "treehill":
-      yaw = -Math.PI / 5;
-      step = 0.05;
+      yaw = -Math.PI / 1.1;
+      step = 0.04;
+      viewer.splatMesh.rotation.set(THREE.MathUtils.degToRad(-25), 0, 0);
       params = {
         ...params,
-        cameraUp: [0.0, 0.0, 0.0],
-        initialCameraPosition: [-1.5268, -2.86369, 8.54446],
-        initialCameraLookAt: [0, 0, 0],
+        cameraUp: [-0.15356, -0.97605, -0.15408],
+        initialCameraPosition: [-2.81607, -0.11878, 6.30533],
+        initialCameraLookAt: [0.33259, 1.1165, -0.47275],
       };
       path = "/assets/models/treehill.ksplat";
       await loadGltf(
@@ -154,30 +167,13 @@ async function viewer(scene) {
         { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
       );
       break;
-    case "mosaic":
-      step = 0.05;
-      yaw = Math.PI / 1.8;
-      params = {
-        ...params,
-        cameraUp: [0.41197, -0.79784, 0.44015],
-        initialCameraPosition: [0.05654, 0.78808, -0.21461],
-        initialCameraLookAt: [0.01862, 1.60604, -0.67796],
-      };
-      path = "/assets/models/mosaic51.ksplat";
-      await loadGltf(
-        params.threeScene,
-        modelPath,
-        { x: params.initialCameraPosition[0], y: params.initialCameraPosition[1], z: params.initialCameraPosition[2] },
-        { x: params.initialCameraLookAt[0], y: params.initialCameraLookAt[1], z: params.initialCameraLookAt[2] }
-      );
-      break;
     case "codebrain":
       yaw = -Math.PI / 5;
-      step = 0.009;
+      step = 0.006;
       params = {
         ...params,
         cameraUp: [0.0, -1.0, 0.0],
-        initialCameraPosition: [-2.3626, 0.17483, -5.08453],
+        initialCameraPosition: [-2.6626, 0.17483, -5.08453],
         initialCameraLookAt: [7.50303, -1.43167, 4.06931],
       };
       path = "/assets/models/codebrain.ksplat";
@@ -195,7 +191,7 @@ async function viewer(scene) {
 
   viewer
     .addSplatScene(path, {
-      progressiveLoad: false,
+      progressiveLoad: true,
     })
     .then(() => {
       console.log("Loaded successfully:", path);
