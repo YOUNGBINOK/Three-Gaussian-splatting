@@ -71,15 +71,11 @@ a {
 }
 
 .section1 {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  justify-items: center;
+  border-bottom: 1px solid #a2a2a2;
 }
 
-.section1_container {
-  border-bottom: 1px solid #a2a2a2;
+.examples_container {
+  /* background-color: #4a4a4a96; */
 }
 
 .section_title {
@@ -90,28 +86,6 @@ a {
   color: #2c2c2c;
   text-decoration: underline;
   font-size: 48px;
-}
-
-.examples_container {
-  display: flex;
-  flex-wrap: wrap;
-  position: relative;
-}
-
-.examples_container > div {
-  position: relative;
-  box-sizing: border-box;
-  border-right: 1px solid #a2a2a2;
-  border-bottom: 1px solid #a2a2a2;
-  padding-bottom: 20px;
-}
-
-.examples_container > div:nth-child(3n) {
-  border-right: none;
-}
-
-.examples_container > div:nth-last-child(-n + 3) {
-  border-bottom: none;
 }
 
 .banner {
@@ -129,7 +103,6 @@ a {
 
 .banner_top {
   background-color: #fbfbfb96;
-  margin-bottom: 50px;
   font-family: "IBM Plex Sans KR", sans-serif;
   font-weight: 400;
   font-style: normal;
@@ -203,30 +176,9 @@ a {
     rgba(255, 218, 252, 0.6082808123249299) 95%
   );
 }
-
 .scene_title {
   font-size: 24px;
 }
-
-.img_box {
-  position: relative;
-}
-
-.static {
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-
-.static:hover {
-  opacity: 0;
-}
-
-.static_hover {
-  background: white;
-  z-index: 100;
-}
-
 /* 푸터 */
 .footer {
   bottom: 0;
